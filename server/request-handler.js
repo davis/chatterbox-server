@@ -1,8 +1,8 @@
 var url = require("url");
-var path = require("path");
-var messages = messages || [];
 
-exports.handleRequest = function(request, response) {
+var messages = [];
+
+var handleRequest = function(request, response) {
   console.log("Serving request type " + request.method + " for url " + request.url);
 
   function route(request) {
@@ -22,13 +22,7 @@ exports.handleRequest = function(request, response) {
     return statusCode;
   }
 
-  var mPath = url.parse(request.url).pathname;
-  var fPath = path.join(process.cwd(), mPath);
-  path.exists(fPath, function(exists){
-    if(!exists) {
-      statusCode = 404;
-    }
-  });
+
 
   var headers = defaultCorsHeaders;
 
@@ -44,3 +38,5 @@ var defaultCorsHeaders = {
   "access-control-allow-headers": "content-type, accept",
   "access-control-max-age": 10 // Seconds.
 };
+
+exports.handleRequest = handleRequest;
