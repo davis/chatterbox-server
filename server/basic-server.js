@@ -16,24 +16,24 @@ var port = 3000;
 var ip = "127.0.0.1";
 
 
+/* These are our possible routes. For now we just have one */
+var routes = {
+  '/classes/chatterbox': rh.handleRequest
+  // other request routes would go here
+};
 
 /* We use node's http module to create a server. Note, we called it 'server', but
 we could have called it anything (myServer, blahblah, etc.). The function we pass it (handleRequest)
 will, unsurprisingly, handle all incoming requests. (ps: 'handleRequest' is in the 'request-handler' file).
 Lastly, we tell the server we made to listen on the given port and IP. */
 
-var routes = {
-  '/classes/chatterbox': rh.handleRequest
-  // other request routes would go here
-};
-
 var server = http.createServer(function(request, response) {
   var pathname = url.parse(request.url).pathname;
   console.log("Serving request type " + request.method + " for url " + pathname);
 
-  var route = routes[pathname];
+  var route = routes[pathname]; // set route using routes object
   if(route){
-    route(request, response);
+    route(request, response); //if route exists, call a request handler on it
   } else {
     response.writeHead(404);
     response.end("404 Not found");
