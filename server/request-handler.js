@@ -1,40 +1,4 @@
-/* You should implement your request handler function in this file.
- * And hey! This is already getting passed to http.createServer()
- * in basic-server.js. But it won't work as is.
- * You'll have to figure out a way to export this function from
- * this file and include it in basic-server.js so that it actually works.
- * *Hint* Check out the node module documentation at http://nodejs.org/api/modules.html. */
-
-var handleRequest = function(request, response) {
-
-  console.log("Serving request type " + request.method + " for url " + request.url);
-  var statusCode
-  if(request.method === 'GET') {
-    statusCode = 200;
-  } else if(request.method === 'POST') {
-    statusCode = 201;
-  } else if(request.method === 'OPTIONS') {
-
-  } else {
-    statusCode = 404;
-  }
-
-
-  /* Without this line, this server wouldn't work. See the note
-   * below about CORS. */
-  var headers = defaultCorsHeaders;
-
-  headers['Content-Type'] = "application/json";
-
-  /* .writeHead() tells our server what HTTP status code to send back */
-  response.writeHead(statusCode, headers);
-
-  /* Make sure to always call response.end() - Node will not send
-   * anything back to the client until you do. The string you pass to
-   * response.end() will be the body of the response - i.e. what shows
-   * up in the browser.*/
-  response.end(JSON.stringify({results: []}));
-};
+var url = require("url");
 
 /* These headers will allow Cross-Origin Resource Sharing (CORS).
  * This CRUCIAL code allows this server to talk to websites that
@@ -46,6 +10,51 @@ var defaultCorsHeaders = {
   "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
   "access-control-allow-headers": "content-type, accept",
   "access-control-max-age": 10 // Seconds.
+};
+
+var messages = []; // initialize messages array
+var idCounter = 1; // start message counter at 1
+
+var handleRequest = function(request, response) {
+  var pathname = url.parse(request.url).pathname;
+  console.log("Serving request type " + request.method + " for url " + pathname);
+
+  var headers = defaultCorsHeaders;
+  headers['Content-Type'] = "application/json";
+
+  var statusCode;
+  // GET ============================
+  if(request.method === 'GET') {
+    response.writeHead(200, headers);
+    response.end(JSON.stringify({results: messages}));
+
+  // POST ===========================
+  } else if(request.method === 'POST') {
+    statusCode = 201;
+    var data = "";
+    request.on('data', function(partialData) { // data comes in 8k chunks
+      data += partialData;
+    });
+    request.on('end', function() { // only at the end of the request do we parse out the message
+      var message = JSON.parse(data);
+      message.objectId = idCounter++; // give the message a object ID; Math.random() doesn't work for some reason...
+      message.createdAt = Date.now(); // give the message a createdAt property
+      messages.unshift(message); // add message to beginning of messages array
+
+      response.writeHead(201, headers);
+      response.end(JSON.stringify({results: messages})); // TO-DO: what do we want to send back?
+    });
+
+  // OPTIONS ========================
+  } else if(request.method === 'OPTIONS') {
+    response.writeHead(200, headers);
+    response.end();
+
+  // 404 ============================
+  } else {
+    statusCode = 404;
+  }
+
 };
 
 exports.handleRequest = handleRequest;
