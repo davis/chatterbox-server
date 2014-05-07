@@ -1,5 +1,6 @@
 /* Import node's http module: */
 var http = require("http");
+var url = require("url");
 var rh = require("./request-handler.js");
 
 
@@ -20,7 +21,24 @@ var ip = "127.0.0.1";
 we could have called it anything (myServer, blahblah, etc.). The function we pass it (handleRequest)
 will, unsurprisingly, handle all incoming requests. (ps: 'handleRequest' is in the 'request-handler' file).
 Lastly, we tell the server we made to listen on the given port and IP. */
-var server = http.createServer(rh.handleRequest);
+
+var routes = {
+  '/classes/chatterbox': rh.handleRequest
+  // other request routes would go here
+};
+
+var server = http.createServer(function(request, response) {
+  var pathname = url.parse(request.url).pathname;
+  console.log("Serving request type " + request.method + " for url " + pathname);
+
+  var route = routes[pathname];
+  if(route){
+    route(request, response);
+  } else {
+    response.writeHead(404);
+    response.end("404 Not found");
+  }
+});
 console.log("Listening on http://" + ip + ":" + port);
 server.listen(port, ip);
 

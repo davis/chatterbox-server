@@ -1,5 +1,3 @@
-var url = require("url");
-
 /* These headers will allow Cross-Origin Resource Sharing (CORS).
  * This CRUCIAL code allows this server to talk to websites that
  * are on different domains. (Your chat client is running from a url
@@ -16,8 +14,7 @@ var messages = []; // initialize messages array
 var idCounter = 1; // start message counter at 1
 
 var handleRequest = function(request, response) {
-  var pathname = url.parse(request.url).pathname;
-  console.log("Serving request type " + request.method + " for url " + pathname);
+
 
   var headers = defaultCorsHeaders;
   headers['Content-Type'] = "application/json";
